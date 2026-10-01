@@ -1,62 +1,34 @@
 package com.gildedrose;
 
+import java.util.Map;
+
+//Represents the Gilded Rose inn and its daily inventory management
 class GildedRose {
+
+    //The list of items currently in stock
     Item[] items;
 
+    //Maps each item type to its corresponding update strategy
+    private static final Map<String, ItemUpdater> UPDATERS = Map.of(
+        "Aged Brie", new AgedBrieUpdater(),
+        "Sulfuras, Hand of Ragnaros", new SulfurasUpdater(),
+        "Backstage passes to a TAFKAL80ETC concert", new BackstagePassesUpdater(),
+        "Conjured Mana Cake", new ConjuredUpdater()
+    );
+
+    //Default updater for normal items
+    private static final ItemUpdater DEFAULT_UPDATER = new NormalItemUpdater();
+
+    //Initializes the inn with its inventory
     public GildedRose(Item[] items) {
         this.items = items;
     }
 
     public void updateQuality() {
-        for (int i = 0; i < items.length; i++) {
-            if (!items[i].name.equals("Aged Brie")
-                    && !items[i].name.equals("Backstage passes to a TAFKAL80ETC concert")) {
-                if (items[i].quality > 0) {
-                    if (!items[i].name.equals("Sulfuras, Hand of Ragnaros")) {
-                        items[i].quality = items[i].quality - 1;
-                    }
-                }
-            } else {
-                if (items[i].quality < 50) {
-                    items[i].quality = items[i].quality + 1;
-
-                    if (items[i].name.equals("Backstage passes to a TAFKAL80ETC concert")) {
-                        if (items[i].sellIn < 11) {
-                            if (items[i].quality < 50) {
-                                items[i].quality = items[i].quality + 1;
-                            }
-                        }
-
-                        if (items[i].sellIn < 6) {
-                            if (items[i].quality < 50) {
-                                items[i].quality = items[i].quality + 1;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (!items[i].name.equals("Sulfuras, Hand of Ragnaros")) {
-                items[i].sellIn = items[i].sellIn - 1;
-            }
-
-            if (items[i].sellIn < 0) {
-                if (!items[i].name.equals("Aged Brie")) {
-                    if (!items[i].name.equals("Backstage passes to a TAFKAL80ETC concert")) {
-                        if (items[i].quality > 0) {
-                            if (!items[i].name.equals("Sulfuras, Hand of Ragnaros")) {
-                                items[i].quality = items[i].quality - 1;
-                            }
-                        }
-                    } else {
-                        items[i].quality = items[i].quality - items[i].quality;
-                    }
-                } else {
-                    if (items[i].quality < 50) {
-                        items[i].quality = items[i].quality + 1;
-                    }
-                }
-            }
+        //Update quality and sellIn for each item in the inventory
+        for (Item item : items) {
+            ItemUpdater updater = UPDATERS.getOrDefault(item.name, DEFAULT_UPDATER);
+            updater.update(item);
         }
     }
 }
